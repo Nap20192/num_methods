@@ -17,6 +17,7 @@ class Constraints:
                  range_carbs=(0.0, float('inf')),
                  calories=(0.0, float('inf')),
                  budget: float = None):
+                 
         self.name = name
         print(name)
         self.min_protein = float(range_protein[0])
