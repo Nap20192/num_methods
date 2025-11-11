@@ -25,18 +25,25 @@ st.markdown(
 )
 
 with st.form('products_form'):
+
     n = st.number_input('Число продуктов', min_value=1, max_value=20, value=3)
     products = []
     st.write('---')
+
     for i in range(int(n)):
+
         st.subheader(f'Продукт #{i+1}')
+
         cols = st.columns(6)
+
         name = cols[0].text_input('Название', value=f'Product {i+1}', key=f'name_{i}')
         price = cols[1].number_input('Цена', min_value=0.0, value=1.0, key=f'price_{i}')
         calories = cols[2].number_input('Ккал', min_value=0.0, value=100.0, key=f'cal_{i}')
+
         protein = cols[3].number_input('Белки (г)', min_value=0.0, value=10.0, key=f'prot_{i}')
         fat = cols[4].number_input('Жиры (г)', min_value=0.0, value=5.0, key=f'fat_{i}')
         carbs = cols[5].number_input('Углеводы (г)', min_value=0.0, value=10.0, key=f'carb_{i}')
+
         profit = st.number_input('Процент/выгода (для max_profit)', value=0.0, key=f'profit_{i}')
         max_qty = st.number_input('max_qty (опционально, 0=нет)', min_value=0.0, value=0.0, key=f'max_{i}')
 
