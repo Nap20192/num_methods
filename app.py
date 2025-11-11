@@ -16,53 +16,53 @@ from core.nutrition import Nutrition, Constraints
 
 # Page config
 st.set_page_config(
-    page_title="Оптимизация продуктов — Симплекс",
+    page_title="Product Optimization — Simplex",
     page_icon="🥗",
     layout="wide"
 )
 
-st.title("🥗 Оптимизация набора продуктов")
+st.title("🥗 Product Optimization")
 st.markdown("""
-Эта программа находит оптимальное количество продуктов с учётом калорий, белков, жиров, углеводов и бюджета.  
-Используется **симплекс-метод** для решения задачи линейного программирования.
+This program finds the optimal quantity of products based on calories, protein, fat, carbs, and budget.  
+Uses the **simplex method** to solve a linear programming problem.
 """)
 
 # Sidebar for objective selection
 with st.sidebar:
-    st.header("⚙️ Настройки оптимизации")
+    st.header("⚙️ Optimization Settings")
     objective = st.radio(
-        "Цель оптимизации:",
+        "Optimization Goal:",
         options=["min_cost", "max_calories"],
-        format_func=lambda x: "Минимизировать стоимость" if x == "min_cost" else "Максимизировать калории",
+        format_func=lambda x: "Minimize Cost" if x == "min_cost" else "Maximize Calories",
         index=0
     )
-    st.info("**min_cost**: найти самый дешёвый набор при выполнении требований\n\n**max_calories**: максимум калорий в рамках бюджета")
+    st.info("**min_cost**: find the cheapest set that meets requirements\n\n**max_calories**: maximize calories within budget")
 
 # Products section
-st.header("📦 Продукты")
-st.markdown("Введите данные о продуктах (цена, калории, БЖУ):")
+st.header("📦 Products")
+st.markdown("Enter product data (price, calories, macros):")
 
-num_products = st.number_input("Количество продуктов", min_value=1, max_value=20, value=3, step=1)
+num_products = st.number_input("Number of Products", min_value=1, max_value=20, value=3, step=1)
 
 products = []
 cols_per_row = 3
 for i in range(num_products):
-    with st.expander(f"Продукт #{i+1}", expanded=(i < 2)):
+    with st.expander(f"Product #{i+1}", expanded=(i < 2)):
         col1, col2, col3 = st.columns(3)
         
         with col1:
-            name = st.text_input("Название", value=f"Продукт {i+1}", key=f"name_{i}")
-            price = st.number_input("Цена (руб)", min_value=0.0, value=10.0 + i*5, step=0.1, key=f"price_{i}")
+            name = st.text_input("Name", value=f"Product {i+1}", key=f"name_{i}")
+            price = st.number_input("Price ($)", min_value=0.0, value=10.0 + i*5, step=0.1, key=f"price_{i}")
         
         with col2:
-            calories = st.number_input("Калории (ккал)", min_value=0.0, value=100.0 + i*50, step=1.0, key=f"cal_{i}")
-            protein = st.number_input("Белки (г)", min_value=0.0, value=10.0 + i*5, step=0.1, key=f"prot_{i}")
+            calories = st.number_input("Calories (kcal)", min_value=0.0, value=100.0 + i*50, step=1.0, key=f"cal_{i}")
+            protein = st.number_input("Protein (g)", min_value=0.0, value=10.0 + i*5, step=0.1, key=f"prot_{i}")
         
         with col3:
-            fat = st.number_input("Жиры (г)", min_value=0.0, value=5.0 + i*2, step=0.1, key=f"fat_{i}")
-            carbs = st.number_input("Углеводы (г)", min_value=0.0, value=15.0 + i*10, step=0.1, key=f"carb_{i}")
+            fat = st.number_input("Fat (g)", min_value=0.0, value=5.0 + i*2, step=0.1, key=f"fat_{i}")
+            carbs = st.number_input("Carbs (g)", min_value=0.0, value=15.0 + i*10, step=0.1, key=f"carb_{i}")
         
-        max_qty = st.number_input("Макс. кол-во (0 = без ограничений)", min_value=0.0, value=0.0, step=1.0, key=f"maxqty_{i}")
+        max_qty = st.number_input("Max Qty (0 = unlimited)", min_value=0.0, value=0.0, step=1.0, key=f"maxqty_{i}")
         
         products.append(Nutrition(
             name=name,
@@ -75,48 +75,48 @@ for i in range(num_products):
         ))
 
 # Constraints section
-st.header("⚖️ Ограничения")
-st.markdown("Задайте минимальные и максимальные значения (0 = нет ограничения):")
+st.header("⚖️ Constraints")
+st.markdown("Set minimum and maximum values (0 = no limit):")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Калории (ккал)")
-    min_calories = st.number_input("Минимум калорий", min_value=0.0, value=2000.0, step=50.0, key="min_cal")
-    max_calories_input = st.number_input("Максимум калорий", min_value=0.0, value=0.0, step=50.0, key="max_cal")
+    st.subheader("Calories (kcal)")
+    min_calories = st.number_input("Minimum Calories", min_value=0.0, value=2000.0, step=50.0, key="min_cal")
+    max_calories_input = st.number_input("Maximum Calories", min_value=0.0, value=0.0, step=50.0, key="max_cal")
     max_calories = float('inf') if max_calories_input == 0 else max_calories_input
 
 with col2:
-    st.subheader("Бюджет (руб)")
-    budget_input = st.number_input("Максимальный бюджет", min_value=0.0, value=500.0, step=10.0, key="budget")
+    st.subheader("Budget ($)")
+    budget_input = st.number_input("Maximum Budget", min_value=0.0, value=500.0, step=10.0, key="budget")
     budget = budget_input if budget_input > 0 else None
 
-st.subheader("Белки / Жиры / Углеводы (г)")
+st.subheader("Protein / Fat / Carbs (g)")
 col_p, col_f, col_c = st.columns(3)
 
 with col_p:
-    st.markdown("**Белки**")
-    min_protein = st.number_input("Мин", min_value=0.0, value=50.0, step=1.0, key="min_prot")
-    max_protein_input = st.number_input("Макс", min_value=0.0, value=0.0, step=1.0, key="max_prot")
+    st.markdown("**Protein**")
+    min_protein = st.number_input("Min", min_value=0.0, value=50.0, step=1.0, key="min_prot")
+    max_protein_input = st.number_input("Max", min_value=0.0, value=0.0, step=1.0, key="max_prot")
     max_protein = float('inf') if max_protein_input == 0 else max_protein_input
 
 with col_f:
-    st.markdown("**Жиры**")
-    min_fat = st.number_input("Мин", min_value=0.0, value=30.0, step=1.0, key="min_fat")
-    max_fat_input = st.number_input("Макс", min_value=0.0, value=0.0, step=1.0, key="max_fat")
+    st.markdown("**Fat**")
+    min_fat = st.number_input("Min", min_value=0.0, value=30.0, step=1.0, key="min_fat")
+    max_fat_input = st.number_input("Max", min_value=0.0, value=0.0, step=1.0, key="max_fat")
     max_fat = float('inf') if max_fat_input == 0 else max_fat_input
 
 with col_c:
-    st.markdown("**Углеводы**")
-    min_carbs = st.number_input("Мин", min_value=0.0, value=200.0, step=1.0, key="min_carb")
-    max_carbs_input = st.number_input("Макс", min_value=0.0, value=0.0, step=1.0, key="max_carb")
+    st.markdown("**Carbs**")
+    min_carbs = st.number_input("Min", min_value=0.0, value=200.0, step=1.0, key="min_carb")
+    max_carbs_input = st.number_input("Max", min_value=0.0, value=0.0, step=1.0, key="max_carb")
     max_carbs = float('inf') if max_carbs_input == 0 else max_carbs_input
 
 st.markdown("---")
 
 # Optimize button
-if st.button("🚀 Запустить оптимизацию", type="primary", use_container_width=True):
-    with st.spinner("Решаем задачу симплекс-методом..."):
+if st.button("🚀 Run Optimization", type="primary", use_container_width=True):
+    with st.spinner("Solving with simplex method..."):
         try:
             # Build constraints
             constraints = Constraints(
@@ -132,10 +132,10 @@ if st.button("🚀 Запустить оптимизацию", type="primary", u
             model = ModelNutrition(products, constraints)
             result = model.optimize(objective=objective)
             print(result)
-            st.success("✅ Оптимизация успешно завершена!")
+            st.success("✅ Optimization completed successfully!")
             
             # Display results
-            st.subheader("📊 Результаты")
+            st.subheader("📊 Results")
             
             solution = result['solution']
             optimal_value = result['optimal_value']
@@ -144,7 +144,7 @@ if st.button("🚀 Запустить оптимизацию", type="primary", u
             selected = [(name, qty) for name, qty in solution.items() if qty > 1e-6]
             
             if not selected:
-                st.warning("⚠️ Решение не найдено или все количества равны нулю. Проверьте ограничения.")
+                st.warning("⚠️ No solution found or all quantities are zero. Check constraints.")
             else:
                 # Build result table
                 result_data = []
@@ -169,49 +169,49 @@ if st.button("🚀 Запустить оптимизацию", type="primary", u
                     total_carbs += carb
                     
                     result_data.append({
-                        "Продукт": prod_name,
-                        "Количество": f"{qty:.2f}",
-                        "Цена (руб)": f"{cost:.2f}",
-                        "Калории": f"{cals:.1f}",
-                        "Белки (г)": f"{prot:.1f}",
-                        "Жиры (г)": f"{fats:.1f}",
-                        "Углеводы (г)": f"{carb:.1f}"
+                        "Product": prod_name,
+                        "Quantity": f"{qty:.2f}",
+                        "Price ($)": f"{cost:.2f}",
+                        "Calories": f"{cals:.1f}",
+                        "Protein (g)": f"{prot:.1f}",
+                        "Fat (g)": f"{fats:.1f}",
+                        "Carbs (g)": f"{carb:.1f}"
                     })
                 
                 st.table(result_data)
                 
                 # Summary metrics
-                st.subheader("📈 Итоговые показатели")
+                st.subheader("📈 Summary Metrics")
                 metric_cols = st.columns(5)
                 
                 with metric_cols[0]:
-                    st.metric("Стоимость", f"{total_cost:.2f} руб")
+                    st.metric("Cost", f"${total_cost:.2f}")
                 with metric_cols[1]:
-                    st.metric("Калории", f"{total_calories:.0f} ккал")
+                    st.metric("Calories", f"{total_calories:.0f} kcal")
                 with metric_cols[2]:
-                    st.metric("Белки", f"{total_protein:.1f} г")
+                    st.metric("Protein", f"{total_protein:.1f} g")
                 with metric_cols[3]:
-                    st.metric("Жиры", f"{total_fat:.1f} г")
+                    st.metric("Fat", f"{total_fat:.1f} g")
                 with metric_cols[4]:
-                    st.metric("Углеводы", f"{total_carbs:.1f} г")
+                    st.metric("Carbs", f"{total_carbs:.1f} g")
                 
                 # Optimal value explanation
                 st.info(f"""
-                **Целевое значение:** {abs(optimal_value):.2f}  
-                {'(минимальная стоимость)' if objective == 'min_cost' else '(максимальные калории)'}
+                **Objective Value:** {abs(optimal_value):.2f}  
+                {'(minimum cost)' if objective == 'min_cost' else '(maximum calories)'}
                 """)
         
         except Exception as e:
-            st.error(f"❌ Ошибка при оптимизации: {str(e)}")
+            st.error(f"❌ Optimization error: {str(e)}")
             st.info("""
-            **Возможные причины:**
-            - Ограничения противоречивы (невозможно выполнить все одновременно)
-            - Бюджет слишком мал для достижения минимальных требований
-            - Минимальные значения БЖУ/калорий слишком высокие
+            **Possible causes:**
+            - Constraints are contradictory (impossible to satisfy all simultaneously)
+            - Budget is too low to meet minimum requirements
+            - Minimum macros/calories values are too high
             
-            Попробуйте ослабить ограничения или увеличить бюджет.
+            Try relaxing constraints or increasing budget.
             """)
 
 # Footer
 st.markdown("---")
-st.caption("💡 Совет: установите максимумы в 0, если не хотите ограничивать сверху. Приложение использует симплекс-метод из модуля `core.simplex`.")
+st.caption("💡 Tip: Set maximums to 0 if you don't want upper limits. The app uses the simplex method from the `core.simplex` module.")

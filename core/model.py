@@ -17,7 +17,7 @@ class ModelNutrition:
             c = [p.calories for p in products]
             maximize = True
 
-        # преобразуем минимизацию в максимизацию для SimplexSolver
+        # Convert minimization to maximization for SimplexSolver
         if not maximize:
             c = [-x for x in c]
             maximize = True
@@ -29,33 +29,38 @@ class ModelNutrition:
             A.append([float(x) for x in coeffs])
             b.append(float(rhs))
 
-        # бюджет
+        # Budget constraint
         if self.constraints.budget is not None:
             add_leq([p.price for p in products], self.constraints.budget)
 
-        # калории
+        # Calorie constraints
         if self.constraints.max_calories != float('inf'):
             add_leq([p.calories for p in products], self.constraints.max_calories)
         if self.constraints.min_calories > 0:
             add_leq([-p.calories for p in products], -self.constraints.min_calories)
 
-        # белки
+        # Protein constraints
         if self.constraints.max_protein != float('inf'):
             add_leq([p.protein for p in products], self.constraints.max_protein)
         if self.constraints.min_protein > 0:
             add_leq([-p.protein for p in products], -self.constraints.min_protein)
 
-        # жиры
+        # Fat constraints
         if self.constraints.max_fat != float('inf'):
             add_leq([p.fat for p in products], self.constraints.max_fat)
         if self.constraints.min_fat > 0:
             add_leq([-p.fat for p in products], -self.constraints.min_fat)
 
-        # углеводы
+        # Carbs constraints
         if self.constraints.max_carbs != float('inf'):
             add_leq([p.carbs for p in products], self.constraints.max_carbs)
         if self.constraints.min_carbs > 0:
             add_leq([-p.carbs for p in products], -self.constraints.min_carbs)
+        for i in range(n):
+            coeffs = [0]*n
+            coeffs[i] = -1 
+            add_leq(coeffs, 0.1)
+        
 
         return c, A, b, var_names, maximize
 
@@ -63,7 +68,7 @@ class ModelNutrition:
         c, A, b, var_names, maximize = self.build_lp(objective)
         from core import simplex  
         solution, optimal = simplex.SimplexSolver(c, A, b, maximize=maximize).solve()
-        # если минимизация, нужно вернуть знак обратно
+        # For minimization, return the sign as-is (already handled in SimplexSolver)
         if objective == 'min_cost':
             optimal = optimal
         return {
